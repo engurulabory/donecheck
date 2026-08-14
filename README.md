@@ -1,89 +1,60 @@
 # DoneCheck
 
-**Open-source verification infrastructure for AI-generated work.**
+**DoneCheck is a vendor-neutral verification layer for AI-generated work.** It turns a task, measurable success criteria, AI output, and evidence into a transparent automated verification result, then preserves final human judgment as `accepted`, `revise`, or `rejected`.
 
-DoneCheck helps determine whether an AI-generated result actually satisfies the original task, measurable success criteria, and required evidence before a human accepts it as complete.
+> Claims are not evidence.
 
-## The problem
-
-AI systems can produce outputs that look complete while still missing requirements, evidence, or the user's original intent. As agents work for longer periods and perform more complex tasks, a simple "completed" status is not enough.
-
-DoneCheck is designed to make completion claims transparent, inspectable, and reviewable.
-
-Core flow:
+## Core lifecycle
 
 `task → success criteria → AI-generated output → evidence → verification → human review → accepted / revise / rejected`
 
-## Open-source purpose
+Automated verification and final human judgment remain separate authorities throughout the flow.
 
-DoneCheck Core is intended to be free, public, and reusable open-source infrastructure.
+## Working Core capabilities
 
-The goal is to provide developers and researchers with a lightweight verification layer that can be integrated into different AI and agent systems while preserving final human judgment.
+- runtime-validated `Task`, `SuccessCriterion`, `Evidence`, `VerificationResult`, and `HumanReview`
+- deterministic, provider-neutral `verifyTask` engine
+- transparent per-criterion reasons and evidence references
+- `pass` / `fail` / `inconclusive` automated outcomes
+- final `accepted` / `revise` / `rejected` human decisions
+- explicit human override visibility
+- fail-closed structural checks
+- reusable public core entry point at `src/donecheck-core.ts`
 
-Planned core capabilities include:
+## Current machine-verifiable evidence rule
 
-- task and success-criteria schemas
-- evidence requirements
-- automated verification checks
-- transparent verification results
-- human review states
-- accept / revise / reject workflows
-- automated tests
-- public technical documentation
-- a lightweight reference web application
-- a reusable open-source package
+For an objective criterion, the Working Core automatically interprets only criterion-scoped `system` evidence of kind `log` or `test_report` whose trimmed content begins with `[DONECHECK:PASS]` or `[DONECHECK:FAIL]`.
 
-## 3-month roadmap
+Human or AI claims cannot manufacture an automated pass. Subjective criteria remain inconclusive at the automated layer and require human judgment.
 
-### Month 1 — Verification contract and core architecture
+## Quick start
 
-- Define the task, success-criteria, evidence, and verification contracts
-- Design the core data model and state transitions
-- Build the first verification engine skeleton
-- Publish initial technical documentation and examples
+```sh
+npm install
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
 
-### Month 2 — Evidence, review, and reference implementation
+Public core entry point:
 
-- Implement evidence checks and verification outcomes
-- Add human review, acceptance, revision, and rejection states
-- Build a lightweight reference web application
-- Add automated tests and example workflows
+```ts
+import { verifyTask, transitionToHumanDecision } from "./src/donecheck-core";
+```
 
-### Month 3 — Validation and public release
+## Reference application contract
 
-- Test the core against representative AI-generated tasks
-- Improve reliability, documentation, and developer ergonomics
-- Publish reusable integration examples
-- Prepare the first public open-source release of DoneCheck Core
+`docs/REFERENCE_APP_CONTRACT.md` defines the required eight-step product flow from task definition through final human judgment.
 
-## Success criteria
+## Architecture and security
 
-The first public release will be considered successful when an independent developer can:
-
-1. define a task,
-2. attach measurable success criteria,
-3. submit an AI-generated result and supporting evidence,
-4. receive a transparent verification outcome, and
-5. complete a human accept / revise / reject decision.
-
-## Public value
-
-DoneCheck aims to improve AI reliability and accountability by making AI-generated work more verifiable, inspectable, and easier to review.
-
-It is designed as public infrastructure: free to use, open to inspection, and extendable by developers and researchers.
-
-## Project status
-
-**Pre-MVP / active development.**
-
-The repository currently defines the public project scope and three-month implementation roadmap. Code and reference implementation work will follow in the open.
+See `docs/ARCHITECTURE.md`, `docs/P10_SECURITY_REVIEW.md`, `SECURITY.md`, and `RELEASE_PROVENANCE.md`.
 
 ## License
 
-DoneCheck is licensed under the **Apache License 2.0**.
+Apache License 2.0. See `LICENSE`.
 
-This allows broad use, modification, and distribution while preserving the license and notice requirements defined in the repository's [`LICENSE`](./LICENSE) file.
+## Release status
 
-## Contributing
-
-Early feedback on the verification contract, success-criteria model, evidence model, and developer experience is welcome.
+This public Working Core was promoted from the controlled development repository after explicit human approval. Exact provenance is recorded in `RELEASE_PROVENANCE.md`.
