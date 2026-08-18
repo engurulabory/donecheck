@@ -10,6 +10,16 @@
 
 Automated verification and final human judgment remain separate authorities throughout the flow.
 
+## ENGÜRÜ Language Governance™ integration
+
+DoneCheck exposes a read-only governance projection for the locked ENGÜRÜ Language Governance™ contract:
+
+`state → claim → evidence → next action`
+
+`toLanguageGovernanceView()` converts an existing DoneCheck `VerificationResult` into that governance view without creating a second verification authority. DoneCheck remains the machine verification authority; Human Review / Human Threshold retains final human authority.
+
+See `docs/ENGURU_LANGUAGE_GOVERNANCE_INTEGRATION.md`.
+
 ## Working Core capabilities
 
 - runtime-validated `Task`, `SuccessCriterion`, `Evidence`, `VerificationResult`, and `HumanReview`
@@ -19,6 +29,7 @@ Automated verification and final human judgment remain separate authorities thro
 - final `accepted` / `revise` / `rejected` human decisions
 - explicit human override visibility
 - fail-closed structural checks
+- read-only ENGÜRÜ Language Governance™ projection
 - reusable public core entry point at `src/donecheck-core.ts`
 
 ## Current machine-verifiable evidence rule
@@ -40,7 +51,7 @@ npm run build
 Public core entry point:
 
 ```ts
-import { verifyTask, transitionToHumanDecision } from "./src/donecheck-core";
+import { verifyTask, transitionToHumanDecision, toLanguageGovernanceView } from "./src/donecheck-core";
 ```
 
 ## Reference application contract
