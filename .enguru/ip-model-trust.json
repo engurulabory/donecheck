@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "governedBy": "ENGURU_IP_MODEL_TRUST_GATE_V1",
+  "repository": "engurulabory/donecheck",
+  "defaultIpClass": "T3",
+  "crownJewelPaths": ["src/", "docs/", "tests/"],
+  "restrictedPaths": [],
+  "humanThresholdRequiredForT4Cloud": true
+}
