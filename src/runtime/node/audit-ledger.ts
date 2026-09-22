@@ -46,7 +46,7 @@ async function readRecords(path: string): Promise<AuditRecord[]> {
   try {
     content = await readFile(path, "utf8");
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    if ((error as { code?: string }).code === "ENOENT") return [];
     throw error;
   }
 
@@ -121,7 +121,7 @@ async function withLock<T>(lockPath: string, work: () => Promise<T>): Promise<T>
       lockHandle = await open(lockPath, "wx");
       break;
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+      if ((error as { code?: string }).code !== "EEXIST") throw error;
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
   }
