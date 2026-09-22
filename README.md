@@ -42,7 +42,7 @@ Human or AI claims cannot manufacture an automated pass. Subjective criteria rem
 
 ### Strict provenance mode
 
-DoneCheck v1.1 can require a producer provenance record before a system PASS/FAIL assertion becomes machine-verifiable:
+DoneCheck v1.1+ can require a producer provenance record before a system PASS/FAIL assertion becomes machine-verifiable:
 
 ```ts
 const result = verifyTask({
@@ -75,6 +75,21 @@ Custom ────────┘
 ```
 
 DoneCheck does not replace those tools. They can act as evidence producers while DoneCheck remains the verification and human-authority boundary.
+
+## Full Product controls
+
+DoneCheck v1.2 adds a Node runtime for production closure:
+
+- durable append-only JSONL audit history with SHA-256 hash chaining;
+- tamper detection before further writes;
+- Ed25519 reviewer authentication;
+- per-reviewer decision authorization;
+- `recordVerifiedFinish()`, which returns a finish receipt only after machine `pass` + cryptographically authorized human `accepted`;
+- a Release Authority workflow that requires merged-PR provenance before an exact `main` SHA is treated as a verified release.
+
+The provider-neutral Working Core remains available from `src/donecheck-core.ts`. Node production controls are exposed separately from `src/donecheck-runtime-node.ts`.
+
+See `docs/FULL_PRODUCT_CONTROLS.md`.
 
 ## Quick start
 

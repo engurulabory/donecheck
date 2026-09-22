@@ -1,0 +1,114 @@
+name: Release Authority
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  verified-release:
+    name: Verified Release Authority
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require merged PR provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          node <<'NODE'
+          const { GH_TOKEN, REPOSITORY, SHA } = process.env;
+          const response = await fetch(
+            `https://api.github.com/repos/${REPOSITORY}/commits/${SHA}/pulls`,
+            {
+              headers: {
+                Accept: "application/vnd.github+json",
+                Authorization: `Bearer ${GH_TOKEN}`,
+                "X-GitHub-Api-Version": "2022-11-28",
+              },
+            },
+          );
+
+          if (!response.ok) {
+            console.error(`GitHub PR provenance lookup failed: ${response.status}`);
+            process.exit(1);
+          }
+
+          const pulls = await response.json();
+          const authorized = pulls.find(
+            (pull) =>
+              pull.merged_at &&
+              pull.base?.ref === "main" &&
+              pull.merge_commit_sha === SHA,
+          );
+
+          if (!authorized) {
+            console.error(
+              "BLOCKED — main SHA is not the merge result of an authorized pull request.",
+            );
+            process.exit(1);
+          }
+
+          console.log(
+            `PASS — merged PR provenance verified: #${authorized.number} → ${SHA}`,
+          );
+          NODE
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --package-lock=false --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Create release authority receipt
+        env:
+          REPOSITORY: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          mkdir -p evidence
+          node <<'NODE' > evidence/release-authority.json
+          const receipt = {
+            schema: "donecheck.release-authority/v1",
+            state: "VERIFIED_RELEASE",
+            repository: process.env.REPOSITORY,
+            commitSha: process.env.SHA,
+            workflowRunId: process.env.RUN_ID,
+            workflowRunAttempt: process.env.RUN_ATTEMPT,
+            gates: {
+              mergedPullRequestProvenance: "PASS",
+              lint: "PASS",
+              typecheck: "PASS",
+              tests: "PASS",
+              build: "PASS",
+            },
+          };
+          process.stdout.write(JSON.stringify(receipt, null, 2) + "\n");
+          NODE
+
+      - name: Upload release authority receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: donecheck-release-authority-${{ github.sha }}
+          path: evidence/release-authority.json
+          if-no-files-found: error
