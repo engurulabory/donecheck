@@ -29,14 +29,52 @@ See `docs/ENGURU_LANGUAGE_GOVERNANCE_INTEGRATION.md`.
 - final `accepted` / `revise` / `rejected` human decisions
 - explicit human override visibility
 - fail-closed structural checks
+- optional provenance-gated machine verification
+- producer normalization for GitHub CI, Playwright, LangSmith, Braintrust, Mac Engineer, and custom producers
 - read-only ENGÜRÜ Language Governance™ projection
 - reusable public core entry point at `src/donecheck-core.ts`
 
-## Current machine-verifiable evidence rule
+## Machine-verifiable evidence
 
-For an objective criterion, the Working Core automatically interprets only criterion-scoped `system` evidence of kind `log` or `test_report` whose trimmed content begins with `[DONECHECK:PASS]` or `[DONECHECK:FAIL]`.
+For an objective criterion, the Working Core interprets only criterion-scoped `system` evidence of kind `log` or `test_report` whose trimmed content begins with `[DONECHECK:PASS]` or `[DONECHECK:FAIL]`.
 
 Human or AI claims cannot manufacture an automated pass. Subjective criteria remain inconclusive at the automated layer and require human judgment.
+
+### Strict provenance mode
+
+DoneCheck v1.1 can require a producer provenance record before a system PASS/FAIL assertion becomes machine-verifiable:
+
+```ts
+const result = verifyTask({
+  task,
+  criteria,
+  aiOutput,
+  evidence,
+  resultId,
+  verifiedAt,
+  policy: {
+    requireEvidenceProvenance: true,
+    trustedProducerIds: ["enguru.github-ci", "enguru.playwright"],
+  },
+});
+```
+
+`createProducerEvidence()` normalizes external verification producers into a common DoneCheck Evidence contract containing producer kind, producer identity, execution identity, SHA-256 artifact digest, observation time, and an optional verification reference.
+
+A provenance record improves traceability and enables explicit producer allow-lists. It does **not** cryptographically authenticate a producer by itself; the integration boundary remains responsible for producer authentication and authorization.
+
+## Producer model
+
+```text
+GitHub CI ─────┐
+Playwright ────┤
+LangSmith ─────┤
+Braintrust ────┼→ DoneCheck Evidence → Verification → Human Review
+Mac Engineer ──┤
+Custom ────────┘
+```
+
+DoneCheck does not replace those tools. They can act as evidence producers while DoneCheck remains the verification and human-authority boundary.
 
 ## Quick start
 
@@ -51,7 +89,12 @@ npm run build
 Public core entry point:
 
 ```ts
-import { verifyTask, transitionToHumanDecision, toLanguageGovernanceView } from "./src/donecheck-core";
+import {
+  createProducerEvidence,
+  verifyTask,
+  transitionToHumanDecision,
+  toLanguageGovernanceView,
+} from "./src/donecheck-core";
 ```
 
 ## Reference application contract
@@ -68,4 +111,4 @@ Apache License 2.0. See `LICENSE`.
 
 ## Release status
 
-This public Working Core was promoted from the controlled development repository after explicit human approval. Exact provenance is recorded in `RELEASE_PROVENANCE.md`.
+This public Working Core is promoted from the controlled development repository through evidence-backed review and independent public CI. Package-registry publication remains a separate decision.
