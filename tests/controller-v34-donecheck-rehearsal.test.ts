@@ -34,7 +34,7 @@ const base = {
   producerKind: "github_ci" as const,
   producerId: "enguru.controller.github-actions",
   executionId: gitHubRun,
-  artifactDigest: `sha256:${sourceCommit}`,
+  artifactDigest: "sha256:9e65c8f9cfd9d9dd4f7759e0b15c704d9191f130a4aa56650cd108dc9e5996f8",
   observedAt: "2026-10-22T07:20:48Z",
   verificationRef: `https://github.com/engurulabory/Engurulaboratuvari/actions/runs/${gitHubRun}`,
 };
