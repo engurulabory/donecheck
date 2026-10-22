@@ -42,7 +42,7 @@ function machine(producerTrusted: boolean, observation: boolean) {
   return verifyTask({ task, criteria: [criterion], aiOutput: "Untrusted controller completion claim",
     evidence: [evidence], resultId: "controller-v34-live-machine-result",
     verifiedAt: "2026-10-22T07:21:00Z",
-    policy: { requireEvidenceProvenance: true, trustedProducerIds: producerTrusted ? ["enguru.controller.github-api-verifier"] : [] } });
+    policy: { requireEvidenceProvenance: true, trustedProducerIds: producerTrusted ? ["enguru.controller.github-api-verifier"] : ["independent.untrusted-producer"] } });
 }
 describe("ENGURU controller real GitHub read-only machine verification", () => {
   it("requires genuine exact-run, exact-source and successful worker API evidence", async () => {
