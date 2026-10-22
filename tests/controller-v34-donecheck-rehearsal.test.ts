@@ -8,7 +8,6 @@ import {
 
 // Controller v3.4 GitHub evidence reference. This is a replay rehearsal, not an
 // independently authenticated live GitHub read or a final human acceptance.
-const sourceCommit = "5eb01e7ab7e67478b502a8f4fed3b161351e6118";
 const gitHubRun = "39739829115";
 const task: Task = {
   id: "enguru-controller-v34-boundary",
