@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { verifyTask, type Task, type SuccessCriterion, type Evidence } from "../src/donecheck-core";
 
@@ -51,5 +52,41 @@ describe("EMUS task identity to DoneCheck verifyTask contract boundary", () => {
   });
   it("stays inconclusive when no real criterion evidence is presented", () => {
     expect(verify([]).outcome).toBe("inconclusive");
+  });
+});
+
+describe("EMUS P1 real CI artifact handoff", () => {
+  const artifactPath = process.env.EMUS_P1_EVIDENCE_FILE;
+  it.skipIf(!artifactPath)("verifies real TaskId from source-pinned Mac Engineer checkpoint", () => {
+    const payload = JSON.parse(readFileSync(artifactPath!, "utf8")) as {
+      schema: string; task_id: string; restarted_task_id: string;
+      idempotent_task_id: string; test_result: string; verified_checkpoint: boolean;
+      authority: string; checkpoint_payload: { step: number };
+    };
+    expect(payload.schema).toBe("enguru.emus.p1.task-identity-evidence/v1");
+    expect(payload.task_id).toMatch(/^task_[a-f0-9]+$/);
+    expect(payload.restarted_task_id).toBe(payload.task_id);
+    expect(payload.idempotent_task_id).toBe(payload.task_id);
+    expect(payload.test_result).toBe("PASS");
+    expect(payload.verified_checkpoint).toBe(true);
+    expect(payload.checkpoint_payload.step).toBe(1);
+    expect(payload.authority).toBe("TEST_ONLY_NO_HUMAN_GRANT");
+    const actualTask: Task = { ...task, id: payload.task_id };
+    const actualCriterion: SuccessCriterion = { ...criterion, taskId: actualTask.id };
+    const actualEvidence: Evidence = {
+      ...evidence, taskId: actualTask.id, criterionId: actualCriterion.id,
+      content: "[DONECHECK:PASS] source-pinned P1 two-store checkpoint and restart",
+    };
+    const actualRun = (items: Evidence[]) => verifyTask({
+      task: actualTask, criteria: [actualCriterion], aiOutput: "P1 two-store run completed",
+      evidence: items, resultId: "verification-emus-real-p1",
+      verifiedAt: "2026-10-23T12:02:00Z",
+    });
+    const positive = actualRun([actualEvidence]);
+    expect(positive.taskId).toBe(payload.task_id);
+    expect(positive.outcome).toBe("pass");
+    expect(positive.criteria[0].evidenceIds).toEqual([actualEvidence.id]);
+    expect(actualRun([]).outcome).toBe("inconclusive");
+    expect(actualRun([{ ...actualEvidence, taskId: "task_wrong" }]).outcome).toBe("fail");
   });
 });
