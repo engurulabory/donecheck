@@ -8,3 +8,4 @@ export * from "./runtime/node/canonical-json";
 export * from "./runtime/node/audit-ledger";
 export * from "./runtime/node/reviewer-attestation";
 export * from "./runtime/node/verified-finish-runtime";
+export * from "./runtime/node/single-owner-criterion-acceptance";
